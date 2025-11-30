@@ -1,0 +1,188 @@
+/* General App Styling */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #333;
+}
+
+#root, .App {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Auth Page Styling */
+.auth-container {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.auth-container h2 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: #1c1e21;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dddfe2;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.auth-container button {
+  width: 100%;
+  padding: 12px;
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.auth-container button:hover {
+  background-color: #166fe5;
+}
+
+.toggle-auth {
+  background-color: #42b72a !important;
+  margin-top: 16px !important;
+}
+
+.toggle-auth:hover {
+  background-color: #36a420 !important;
+}
+
+.error-message {
+  color: #fa383e;
+  margin-bottom: 16px;
+}
+
+
+/* Chat Page Styling */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #1877f2;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chat-header h2 {
+    margin: 0;
+}
+
+.logout-button {
+  background: #f0f2f5;
+  color: #1c1e21;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.logout-button:hover {
+  background: #e4e6eb;
+}
+
+.messages-area {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #f0f2f5;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: flex-end;
+}
+
+.message .username {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #050505;
+}
+
+.message .content {
+    background: #e4e6eb;
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 70%;
+}
+
+.message .timestamp {
+    font-size: 0.75rem;
+    color: #65676b;
+    margin-left: 8px;
+}
+
+.message-form {
+  display: flex;
+  padding: 20px;
+  border-top: 1px solid #ddd;
+  background: white;
+}
+
+.message-form input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 24px;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.message-form button {
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 0 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.message-form button:hover {
+  background-color: #166fe5;
+}

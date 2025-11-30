@@ -1,0 +1,55 @@
+# render.yaml
+# This file configures the deployment of both the client and server on Render.
+# Render will automatically detect this file and set up the services.
+
+services:
+  # -----------------
+  # Backend Server
+  # -----------------
+  - type: web
+    name: family-chat-server
+    runtime: node
+    # Tell Render to run commands from the 'server' subdirectory
+    rootDir: ./server
+    buildCommand: npm install
+    startCommand: npm start
+    # Specify a recent Node.js version
+    plan: free # Use the free instance type
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # The client's URL will be automatically injected here once it's deployed.
+      - key: CLIENT_URL
+        fromService:
+          type: static
+          name: family-chat-client
+          property: url
+      # A secure, randomly generated secret for signing tokens.
+      # You can change this in the Render dashboard if you wish.
+      - key: JWT_SECRET
+        generateValue: true # Let Render generate a secure random value
+      # Set the database path to use the persistent disk.
+      - key: DATABASE_PATH
+        value: /var/data/chat.db
+    # Add a persistent disk to store the SQLite database file.
+    disks:
+      - name: chat-db-disk
+        mountPath: /var/data
+        sizeGB: 1
+
+  # -----------------
+  # Frontend Client
+  # -----------------
+  - type: static
+    name: family-chat-client
+    # Tell Render to run commands from the 'client' subdirectory
+    rootDir: ./client
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    plan: free # Use the free instance type
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: family-chat-server
+          property: url
