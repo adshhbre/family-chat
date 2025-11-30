@@ -21,7 +21,7 @@ services:
       # The client's URL will be automatically injected here once it's deployed.
       - key: CLIENT_URL
         fromService:
-          type: static_site
+          type: static site
           name: family-chat-client
           property: url
       # A secure, randomly generated secret for signing tokens.
@@ -40,7 +40,7 @@ services:
   # -----------------
   # Frontend Client
   # -----------------
-  - type: static_site
+  - type: static site
     name: family-chat-client
     # Tell Render to run commands from the 'client' subdirectory
     rootDir: ./client
