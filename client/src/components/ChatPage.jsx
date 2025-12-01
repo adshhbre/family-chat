@@ -4,7 +4,8 @@ import io from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const ChatPage = ({ token, onLogout }) => {
+// Note: currentUsername is still needed to apply the my-message class
+const ChatPage = ({ token, onLogout, currentUsername }) => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -21,8 +22,10 @@ const ChatPage = ({ token, onLogout }) => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/messages`, {
-          headers: { Authorization: `Bearer ${token}` }, // Assuming protected route
+          headers: { Authorization: `Bearer ${token}` },
         });
+        // DEBUG: Log the messages received from the server
+        console.log('[DEBUG] Received messages from server:', response.data);
         setMessages(response.data);
       } catch (error) {
         console.error('Failed to fetch messages:', error);
@@ -81,16 +84,21 @@ const ChatPage = ({ token, onLogout }) => {
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <h2>Family Chat</h2>
-        <button onClick={onLogout} className="logout-button">Logout</button>
+        <h2>가족 대화방</h2>
+        <button onClick={onLogout} className="logout-button">로그아웃</button>
       </div>
       <div className="messages-area">
         {messages.map((msg) => (
-          <div key={msg.id} className="message">
-            <span className="username">{msg.username}:</span>
-            <span className="content">{msg.message}</span>
-            <span className="timestamp">{formatTimestamp(msg.timestamp)}</span>
-          </div>
+            <div key={msg.id} className={`message ${msg.username === currentUsername ? "my-message" : "other-message"}`}>
+                <div className="avatar-container">
+                    <div className="avatar">{msg.avatar || '👤'}</div>
+                    <span className="username">{msg.username}</span>
+                </div>
+                <div className="message-body">
+                    <div className="content">{msg.message}</div>
+                    <span className="timestamp">{formatTimestamp(msg.timestamp)}</span>
+                </div>
+            </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
@@ -99,9 +107,9 @@ const ChatPage = ({ token, onLogout }) => {
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="대화를 입력하세요."
         />
-        <button type="submit">Send</button>
+        <button type="submit">➤</button>
       </form>
     </div>
   );
