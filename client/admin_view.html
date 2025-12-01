@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>학생 제출 현황 대시보드</h1>
+
+        <div class="chart-container" style="margin-bottom: 2rem;">
+            <canvas id="emoji-chart"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="form-group">
+                <label for="date-filter">날짜 선택</label>
+                <input type="date" id="date-filter">
+            </div>
+            <button id="reset-filter-btn">이모티콘 필터 해제</button>
+            <button id="toggle-secret-btn">선생님 전용 보기</button>
+            <button id="refresh-btn">전체 새로고침</button>
+        </div>
+
+        <table id="messages-table">
+            <thead>
+                <tr>
+                    <th>제출 시간</th>
+                    <th>이름</th>
+                    <th>기분</th>
+                    <th>하고 싶은 말</th>
+                    <th class="secret-column">선생님께만</th>
+                    <th class="secret-column">접속 IP</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // DOM Elements
+        const messagesTable = document.getElementById('messages-table');
+        const tableBody = messagesTable.querySelector('tbody');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const dateFilter = document.getElementById('date-filter');
+        const resetFilterBtn = document.getElementById('reset-filter-btn');
+        const toggleSecretBtn = document.getElementById('toggle-secret-btn');
+        const chartCanvas = document.getElementById('emoji-chart').getContext('2d');
+
+        // State
+        let allMessages = [];
+        let emojiChart = null;
+        let emojiFilter = null;
+
+        // --- Core Functions ---
+
+        function renderTable(messages) {
+            tableBody.innerHTML = '';
+            messages.slice().reverse().forEach(msg => {
+                const row = tableBody.insertRow();
+                const timestamp = new Date(msg.TIMESTAMP);
+                row.insertCell(0).textContent = timestamp.toLocaleString('ko-KR');
+                row.insertCell(1).textContent = msg.NAME;
+                row.insertCell(2).textContent = msg.MOOD;
+                row.insertCell(3).textContent = msg.MESSAGE;
+                
+                const secretCell = row.insertCell(4);
+                secretCell.textContent = msg.SECRET_MESSAGE || '';
+                secretCell.classList.add('secret-column');
+
+                const ipCell = row.insertCell(5);
+                ipCell.textContent = msg.IP_ADDRESS || '';
+                ipCell.classList.add('secret-column');
+            });
+        }
+
+        function renderChart(messages) {
+            const counts = messages.reduce((acc, msg) => {
+                if (msg.MOOD) {
+                    acc[msg.MOOD] = (acc[msg.MOOD] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const labels = Object.keys(counts);
+            const data = Object.values(counts);
+
+            if (emojiChart) {
+                emojiChart.destroy();
+            }
+
+            emojiChart = new Chart(chartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '이모티콘 선택 수',
+                        data: data,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 24 // Increase font size for emojis
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const chartElement = elements[0];
+                            emojiFilter = labels[chartElement.index];
+                            updateDashboard();
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.parsed.y} 명`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            const selectedDate = dateFilter.value;
+            
+            let filteredMessages = allMessages;
+
+            // 1. Filter by date
+            if (selectedDate) {
+                filteredMessages = filteredMessages.filter(msg => {
+                    return msg.TIMESTAMP && msg.TIMESTAMP.split('T')[0] === selectedDate;
+                });
+            }
+
+            // Render chart with date-filtered data
+            renderChart(filteredMessages);
+
+            // 2. Filter by emoji (if selected)
+            if (emojiFilter) {
+                filteredMessages = filteredMessages.filter(msg => msg.MOOD === emojiFilter);
+            }
+            
+            // Render table with fully filtered data
+            renderTable(filteredMessages);
+        }
+
+        async function fetchAndRender() {
+            try {
+                const response = await fetch('/api/messages');
+                if (!response.ok) throw new Error('데이터를 불러오는 데 실패했습니다.');
+                allMessages = await response.json();
+                updateDashboard();
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        }
+        
+        // --- Initial Setup ---
+
+        function setDateToToday() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = ('0' + (today.getMonth() + 1)).slice(-2);
+            const day = ('0' + today.getDate()).slice(-2);
+            dateFilter.value = `${year}-${month}-${day}`;
+        }
+
+        // --- Event Listeners ---
+
+        window.addEventListener('load', () => {
+            setDateToToday();
+            fetchAndRender();
+        });
+        
+        dateFilter.addEventListener('change', () => {
+            emojiFilter = null; // Reset emoji filter when date changes
+            updateDashboard();
+        });
+
+        resetFilterBtn.addEventListener('click', () => {
+            emojiFilter = null;
+            updateDashboard();
+        });
+
+        toggleSecretBtn.addEventListener('click', () => {
+            messagesTable.classList.toggle('show-secret');
+            // Change button text based on state
+            if (messagesTable.classList.contains('show-secret')) {
+                toggleSecretBtn.textContent = '전용 보기 끄기';
+            } else {
+                toggleSecretBtn.textContent = '선생님 전용 보기';
+            }
+        });
+
+        refreshBtn.addEventListener('click', fetchAndRender);
+        setInterval(fetchAndRender, 30000); // Auto-refresh every 30 seconds
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 기분</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>오늘의 기분을 알려주세요!</h1>
+        <form id="mood-form">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label>오늘의 기분</label>
+                <div class="mood-selector">
+                    <label><input type="radio" name="mood" value="😊" required> 😊</label>
+                    <label><input type="radio" name="mood" value="😄" required> 😄</label>
+                    <label><input type="radio" name="mood" value="🤩" required> 🤩</label>
+                    <label><input type="radio" name="mood" value="🥰" required> 🥰</label>
+                    <label><input type="radio" name="mood" value="😴" required> 😴</label>
+                    <label><input type="radio" name="mood" value="🤔" required> 🤔</label>
+                    <label><input type="radio" name="mood" value="😐" required> 😐</label>
+                    <label><input type="radio" name="mood" value="😢" required> 😢</label>
+                    <label><input type="radio" name="mood" value="😠" required> 😠</label>
+                    <label><input type="radio" name="mood" value="🤯" required> 🤯</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="message">하고 싶은 말</label>
+                <textarea id="message" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="secretMessage">선생님께만 하고 싶은 말 (선택 사항)</label>
+                <textarea id="secretMessage" rows="2"></textarea>
+            </div>
+            <button type="submit">제출</button>
+        </form>
+        <p id="feedback"></p>
+    </div>
+
+    <script>
+        const moodForm = document.getElementById('mood-form');
+        const moodSelector = document.querySelector('.mood-selector');
+        const labels = moodSelector.querySelectorAll('label');
+
+        // --- Mood Selection Logic ---
+        moodSelector.addEventListener('change', function(event) {
+            // Remove .is-selected from all labels
+            labels.forEach(label => {
+                label.classList.remove('is-selected');
+            });
+
+            // Add .is-selected to the parent label of the checked radio
+            if (event.target.type === 'radio') {
+                event.target.parentElement.classList.add('is-selected');
+            }
+        });
+
+        // --- Form Submission Logic ---
+        moodForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const mood = document.querySelector('input[name="mood"]:checked').value;
+            const message = document.getElementById('message').value;
+            const secretMessage = document.getElementById('secretMessage').value; // Get the new field
+            const feedbackEl = document.getElementById('feedback');
+
+            fetch('/api/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, mood, message, secretMessage }), // Send the new field
+            })
+            .then(response => {
+                if (response.ok) {
+                    feedbackEl.textContent = '제출되었습니다!';
+                    feedbackEl.style.color = 'green';
+                    moodForm.reset();
+                    // Clear visual selection
+                    labels.forEach(label => {
+                        label.classList.remove('is-selected');
+                    });
+                } else {
+                    throw new Error('서버에 문제가 발생했습니다.');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                feedbackEl.textContent = '제출에 실패했습니다. 다시 시도해주세요.';
+                feedbackEl.style.color = 'red';
+            });
+        });
+    </script>
+</body>
+</html>
