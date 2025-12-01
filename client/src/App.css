@@ -271,7 +271,7 @@ body {
   display: flex; /* Makes avatar-container and message-body flex items */
   margin-bottom: 20px;
   align-items: flex-end; /* Aligns avatar-container and message-body */
-  max-width: 80%; /* Limit the width of the whole message block */
+  max-width: 90%; /* Limit the width of the whole message block */
 }
 
 /* Avatar and Username Grouping */
